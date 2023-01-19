@@ -1,0 +1,16 @@
+{
+  "name": "danielfatkic/ipsaliases",
+  "require": {
+    "symfony/finder": "^6.0",
+    "php": ">=8.0.0"
+  },
+  "authors": [
+    {
+      "name": "Daniel Fatkic"
+    }
+  ],
+  "minimum-stability": "dev",
+  "bin": [
+    "bin/generatealiases"
+  ]
+}
