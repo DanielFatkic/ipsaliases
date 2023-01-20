@@ -4,7 +4,7 @@
     "symfony/finder": "^6.0",
     "php": ">=8.0.0"
   },
-   "license": "MIT",
+  "license": "MIT",
   "authors": [
     {
       "name": "Daniel Fatkic"
