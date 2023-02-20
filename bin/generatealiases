@@ -34,7 +34,7 @@ foreach( $files as $file ){
 	$oldClassname=$namespace.'\\_'.$classname;
 
 	$toAdd=<<<TOADD
-class_alias('$oldClassname', '$newClassname', false);
+class_alias($oldClassname::class, '$newClassname', false);
 TOADD;
 
 	file_put_contents( $aliasfile, $toAdd.PHP_EOL, FILE_APPEND );
