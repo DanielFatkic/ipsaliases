@@ -9,6 +9,6 @@ Then call  `vendor/bin/generatealiases .` to generate the alias file which will 
 
 ```
 <?php 
-class_alias('IPS\forums\_Application', 'IPS\forums\Application', false);
-class_alias('IPS\forums\tasks\_archive', 'IPS\forums\tasks\archive', false);
+class_alias(IPS\forums\_Application::class, 'IPS\forums\Application', false);
+class_alias(IPS\forums\tasks\_archive::class, 'IPS\forums\tasks\archive', false);
 ...
