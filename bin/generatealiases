@@ -8,6 +8,15 @@ if( !$argv[ 1 ] ?? false ){
 	$communityPath=$argv[ 1 ];
 }
 
+
+$metadataPath = $communityPath.'/.phpstorm.meta.php';
+
+if( !is_dir( $metadataPath ) )
+{
+	mkdir( $metadataPath );
+}
+
+
 $finder=new \Symfony\Component\Finder\Finder();
 // find all files in the current directory
 $files=$finder->files()
@@ -19,7 +28,7 @@ $files=$finder->files()
 	->exclude( 'hooks' )
 	->contains( 'class _' );
 
-$aliasfile=$communityPath."/aliases.php";
+$aliasfile=$metadataPath."/aliases.php";
 file_put_contents( $aliasfile, '<?php '.PHP_EOL );
 
 foreach( $files as $file ){
@@ -41,3 +50,43 @@ TOADD;
 }
 
 echo "generated ".$aliasfile . PHP_EOL;
+
+
+require_once $communityPath . '/init.php';
+
+$m = <<<"META"
+<?php
+namespace PHPSTORM_META {
+
+	exitPoint(\IPS\_Output::error());
+	exitPoint(\IPS\_Output::sendOutput());
+	exitPoint(\IPS\_Output::json());
+	exitPoint(\IPS\_Output::redirect());
+	exitPoint(\IPS\_Output::showOffline());
+	exitPoint(\IPS\_Output::showBanned());
+}
+META;
+
+file_put_contents( $metadataPath.'/output.php', $m );
+
+
+$tables = \IPS\Db::i()->getTables( \IPS\Db::i()->prefix );
+$m = <<<"META"
+<?php
+namespace PHPSTORM_META {
+
+registerArgumentsSet('tables',
+META;
+
+foreach( $tables as $tableName )
+{
+	$m .= "'$tableName',".PHP_EOL;
+}
+
+$m .= ");
+ 	expectedArguments(\IPS\_Db::select(), 1, argumentsSet('tables'));
+	expectedArguments(\IPS\_Db::delete(), 0, argumentsSet('tables'));
+	expectedArguments(\IPS\_Db::insert(), 0, argumentsSet('tables'));
+	expectedArguments(\IPS\_Db::update(), 0, argumentsSet('tables'));
+}";
+file_put_contents( $metadataPath.'/tables.php', $m );
