@@ -90,3 +90,31 @@ $m .= ");
 	expectedArguments(\IPS\_Db::update(), 0, argumentsSet('tables'));
 }";
 file_put_contents( $metadataPath.'/tables.php', $m );
+
+
+$words = [];
+foreach ( \IPS\Application::applications() as $app )
+{
+	if ( file_exists( \IPS\ROOT_PATH . "/applications/{$app->directory}/dev/lang.php" ) )
+	{
+		require \IPS\ROOT_PATH . "/applications/{$app->directory}/dev/lang.php";
+		$words = array_merge( $words, $lang );
+	}
+}
+
+$l = <<<"META"
+<?php
+namespace PHPSTORM_META {
+
+registerArgumentsSet('languages',
+META;
+
+foreach( $words as $tableName => $word )
+{
+	$l .= "'$tableName',".PHP_EOL;
+}
+
+$l .= ");
+ 	expectedArguments(\IPS\_Lang::addToStack(), 0, argumentsSet('languages'));
+}";
+file_put_contents( $metadataPath.'/lang.php', $l );
