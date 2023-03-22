@@ -118,3 +118,10 @@ $l .= ");
  	expectedArguments(\IPS\_Lang::addToStack(), 0, argumentsSet('languages'));
 }";
 file_put_contents( $metadataPath.'/lang.php', $l );
+
+$constants = '<?php';
+foreach( \IPS\IPS::defaultConstants() as $c => $v)
+{
+	$constants .= PHP_EOL . "define( '{$c}', '{$v}' );";
+}
+file_put_contents( $metadataPath.'/constants.php', $constants );
