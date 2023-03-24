@@ -74,7 +74,7 @@ foreach( \IPS\IPS::defaultConstants() as $c => $v )
 		'unknown type' => $v = '[]',
 	};
 
-	$constants .= PHP_EOL."define( '{$c}', {$v} );".PHP_EOL;
+	$constants .= PHP_EOL."define( 'IPS\\$c', {$v} );".PHP_EOL;
 }
 
 file_put_contents( $metadataPath.'/constants.php', $constants );
