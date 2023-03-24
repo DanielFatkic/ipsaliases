@@ -1,11 +1,12 @@
 #!/usr/bin/env php
-<?php declare( strict_types=1 );
+<?php declare( strict_types = 1 );
 
 include $_composer_autoload_path ?? __DIR__.'/../vendor/autoload.php';
 
-$communityPath=getcwd();
-if( !$argv[ 1 ] ?? false ){
-	$communityPath=$argv[ 1 ];
+$communityPath = getcwd();
+if( !$argv[ 1 ] ?? FALSE )
+{
+	$communityPath = $argv[ 1 ];
 }
 
 
@@ -17,42 +18,66 @@ if( !is_dir( $metadataPath ) )
 }
 
 
-$finder=new \Symfony\Component\Finder\Finder();
+$finder = new \Symfony\Component\Finder\Finder();
 // find all files in the current directory
-$files=$finder->files()
-	->in( $communityPath.'/api' )
-	->in( $communityPath.'/admin' )
-	->in( $communityPath.'/applications' )
-	->in( $communityPath.'/system' )
-	->name( '*.php' )
-	->exclude( 'hooks' )
-	->contains( 'class _' );
+$files = $finder->files()
+->in( $communityPath.'/api' )
+->in( $communityPath.'/admin' )
+->in( $communityPath.'/applications' )
+->in( $communityPath.'/system' )
+->name( '*.php' )
+->exclude( 'hooks' )
+->contains( 'class _' );
 
-$aliasfile=$metadataPath."/aliases.php";
+$aliasfile = $metadataPath.'/aliases.php';
 file_put_contents( $aliasfile, '<?php '.PHP_EOL );
 
-foreach( $files as $file ){
+foreach( $files as $file )
+{
 	// this shouldn't happen with IPS files, but ....
-	$namespace='';
-	if( preg_match( '#^namespace\s+(.+?);$#sm', $file->getContents(), $m ) ){
-		$namespace=$m[ 1 ];
+	$namespace = '';
+	if( preg_match( '#^namespace\s+(.+?);$#sm', $file->getContents(), $m ) )
+	{
+		$namespace = $m[ 1 ];
 	}
 
-	$classname=$file->getBasename( '.php' );
-	$newClassname=$namespace.'\\'.$classname;
-	$oldClassname=$namespace.'\\_'.$classname;
+	$classname = $file->getBasename( '.php' );
+	$newClassname = $namespace.'\\'.$classname;
+	$oldClassname = $namespace.'\\_'.$classname;
 
-	$toAdd=<<<TOADD
+	$toAdd = <<<TOADD
 class_alias($oldClassname::class, '$newClassname', false);
 TOADD;
 
 	file_put_contents( $aliasfile, $toAdd.PHP_EOL, FILE_APPEND );
 }
 
-echo "generated ".$aliasfile . PHP_EOL;
+echo 'generated '.$aliasfile.PHP_EOL;
 
 
-require_once $communityPath . '/init.php';
+require_once $communityPath.'/init.php';
+
+$constants = '<?php';
+foreach( \IPS\IPS::defaultConstants() as $c => $v )
+{
+	$type = gettype( $v );
+	match ( $type )
+	{
+		'boolean' => $v = $v ? 'true' : 'false',
+		'integer' => $v = (string) $v,
+		'double' => $v = (string) $v,
+		'string' => $v = "'{$v}'",
+		'array' => $v = '[]',
+		'object' => $v = '[]',
+		'resource' => $v = '[]',
+		'NULL' => $v = 'null',
+		'unknown type' => $v = '[]',
+	};
+
+	$constants .= PHP_EOL."define( '{$c}', {$v} );".PHP_EOL;
+}
+
+file_put_contents( $metadataPath.'/constants.php', $constants );
 
 $m = <<<"META"
 <?php
@@ -93,11 +118,11 @@ file_put_contents( $metadataPath.'/tables.php', $m );
 
 
 $words = [];
-foreach ( \IPS\Application::applications() as $app )
+foreach( \IPS\Application::applications() as $app )
 {
-	if ( file_exists( \IPS\ROOT_PATH . "/applications/{$app->directory}/dev/lang.php" ) )
+	if( file_exists( \IPS\ROOT_PATH."/applications/{$app->directory}/dev/lang.php" ) )
 	{
-		require \IPS\ROOT_PATH . "/applications/{$app->directory}/dev/lang.php";
+		require \IPS\ROOT_PATH."/applications/{$app->directory}/dev/lang.php";
 		$words = array_merge( $words, $lang );
 	}
 }
@@ -118,10 +143,3 @@ $l .= ");
  	expectedArguments(\IPS\_Lang::addToStack(), 0, argumentsSet('languages'));
 }";
 file_put_contents( $metadataPath.'/lang.php', $l );
-
-$constants = '<?php';
-foreach( \IPS\IPS::defaultConstants() as $c => $v)
-{
-	$constants .= PHP_EOL . "define( '{$c}', '{$v}' );";
-}
-file_put_contents( $metadataPath.'/constants.php', $constants );
